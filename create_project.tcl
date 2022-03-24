@@ -37,8 +37,8 @@ set tfspeed           "100"
 set afus {thymesisflow}
 set transceiver_types { bypass}
 set transceiver_speeds { 25.78125 25.625 20.0 }
-set cards { ad9v3 }
-set fpgas {xcvu3p-ffvc1517-2-i}
+set cards { ad9v3, ad9h7 }
+set fpgas {xcvu3p-ffvc1517-2-i, xcvu37p-fsvh2892-2-e-es1}
 set fpga  ""
 
 
@@ -271,6 +271,8 @@ if { ($afu eq "thymesisflow") && ($tftype eq "compute")} {
     set verilog_AFU [list {*}$verilog_AFU {*}$verilog_thymesisflow_common {*}$verilog_thymesisflow_memory]
 } elseif { ($afu eq "thymesisflow") && ($tftype eq "")} {
     set verilog_AFU [list {*}$verilog_AFU {*}$verilog_thymesisflow_common {*}$verilog_thymesisflow_memory {*}$verilog_thymesisflow_compute]
+} elseif { ($afu eq "thymesisflow") && ($tftype eq "loopback")} {
+    set verilog_AFU [list {*}$verilog_AFU {*}$verilog_thymesisflow_common {*}$verilog_thymesisflow_memory {*}$verilog_thymesisflow_compute]
 }
 
 
@@ -279,6 +281,7 @@ set verilog_board_support [list \
  "[file normalize "$origin_dir/board_support_packages/$card/verilog/oc_bsp.v"]"\
  "[file normalize "$origin_dir/board_support_packages/$card/verilog/cfg_tieoffs.v"]"\
  "[file normalize "$origin_dir/board_support_packages/$card/verilog/vpd_stub.v"]"\
+ "[file normalize "$origin_dir/board_support_packages/$card/verilog/iprog_icap.vhdl"]"\
 ]
 
 # Xilinx Example Design Wrappers for either buffer bypass or elastic buffer
@@ -484,9 +487,11 @@ if {$transceiver_type  eq [lindex $transceiver_types  0]} {set synth_verilog_def
 if {$transceiver_type  eq [lindex $transceiver_types  1]} {set synth_verilog_defines [concat $synth_verilog_defines "BUFFER_ELASTIC"]}
 if {$use_flash         ne ""                            } {set synth_verilog_defines [concat $synth_verilog_defines "FLASH"]}
 # thymesisflow defines to enable qsfp transceivers 
-if {$afu               eq "thymesisflow"                } {set synth_verilog_defines [concat $synth_verilog_defines "THYMESISFLOW"]}
-if {($afu eq "thymesisflow") && ($tftype eq "compute")  } {set synth_verilog_defines [concat $synth_verilog_defines "TFCOMPUTE"]}
-if {($afu eq "thymesisflow") && ($tftype eq "memory")   } {set synth_verilog_defines [concat $synth_verilog_defines "TFMEMORY"]}
+if {$afu               eq "thymesisflow"                  } {set synth_verilog_defines [concat $synth_verilog_defines "THYMESISFLOW"]}
+if {($afu eq "thymesisflow") && ($tftype eq "compute")    } {set synth_verilog_defines [concat $synth_verilog_defines "TFCOMPUTE"]}
+if {($afu eq "thymesisflow") && ($tftype eq "memory")     } {set synth_verilog_defines [concat $synth_verilog_defines "TFMEMORY"]}
+if {($afu eq "thymesisflow") && ($tftype eq "loopback")   } {set synth_verilog_defines [concat $synth_verilog_defines "TFLOOPBACK"]}
+
 
 
 
@@ -800,11 +805,11 @@ if { ($afu eq "thymesisflow") } {
 if { ($afu eq "thymesisflow") && ($tftype ne "compute")} {
     set thymesisflow_hls_dir   "${origin_dir}/afu/thymesisflow/hls_modules"
     catch {cd $thymesisflow_hls_dir/memory_egress}
-    exec  vivado_hls -f build_hls_module.tcl
+    exec  vivado_hls -f build_hls_module_$card.tcl
 #    catch {cd ../../../../ }
     catch {cd ${origin_dir}}
     catch {cd $thymesisflow_hls_dir/memory_egress_lookup}
-    exec  vivado_hls -f build_hls_module.tcl
+    exec  vivado_hls -f build_hls_module_$card.tcl
 #    catch {cd ../../../../ }
     catch {cd ${origin_dir}}
     set_property  ip_repo_paths {./afu/thymesisflow/hls_modules/memory_egress/ocx_memory_egress/solution1/impl/ip/ ./afu/thymesisflow/hls_modules/memory_egress_lookup/ocx_memory_egress_lookup/solution1/impl/ip/} [current_project]    
