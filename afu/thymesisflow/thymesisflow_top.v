@@ -371,7 +371,7 @@ dataflit_fifo TF_TLX_AFU_DATAFIFO
        );
 
 
- thymesisflow_64B_compute_egress_adapter TF_COMPUTE_EGRESS_ADAPTER (
+thymesisflow_64B_compute_egress_adapter TF_COMPUTE_EGRESS_ADAPTER (
 
           .clock                  (clock)
          ,.reset_n                (reset_n)
@@ -390,7 +390,7 @@ dataflit_fifo TF_TLX_AFU_DATAFIFO
 
        );
 
-`ifndef TFLOOPBACK
+  `ifndef TFLOOPBACK
 thymesisflow_64B_32B_routing_egress TF_COMPUTE_ROUTING_EGR
       (
 
@@ -434,22 +434,11 @@ thymesisflow_32B_64B_routing_compute_ingress TF_COMPUTE_ROUTING_INGR
         ,.arb_sel                   (c_arb_sel_mem_ingr)
 
       );
-      
+  `endif
+  //End of !TFLOOPBACK      
 
-
-thymesisflow_rr_arbiter#(.SIZE(2))  TF_COMPUTE_RR_ARB_INGR
-      (
-           .clock                   (clock)
-          ,.reset_n                 (reset_n)
-          ,.request_vector          (c_arb_req_mem_ingr)
-          ,.request_nxt             (c_arb_req_nxt_mem_ingr)
-          ,.selected                (c_arb_sel_mem_ingr)              
-      );
-`endif
-//End of !TFLOOPBACK
-
-`ifdef TFLOOPBACK     
- thymesisflow_64B_32B_routing_egress TF_COMPUTE_ROUTING_EGR
+  `ifdef TFLOOPBACK
+thymesisflow_64B_32B_routing_egress TF_COMPUTE_ROUTING_EGR
     (
 
        .clock                     (clock)                   
@@ -492,8 +481,16 @@ thymesisflow_rr_arbiter#(.SIZE(2))  TF_COMPUTE_RR_ARB_INGR
       ,.arb_sel                   (c_arb_sel_mem_ingr)
 
     );
-`endif
+  `endif
 
+thymesisflow_rr_arbiter#(.SIZE(2))  TF_COMPUTE_RR_ARB_INGR
+      (
+           .clock                   (clock)
+          ,.reset_n                 (reset_n)
+          ,.request_vector          (c_arb_req_mem_ingr)
+          ,.request_nxt             (c_arb_req_nxt_mem_ingr)
+          ,.selected                (c_arb_sel_mem_ingr)              
+      );
 
 `endif  
 //End of !TFMEMORY
@@ -631,11 +628,11 @@ ocx_memory_egress TF_MEMORY_EGRESS
 
 tl_resp_fifo TF_TL_RESP_FIFO
        (
-`ifdef TFLOOPBACK
+  `ifdef TFLOOPBACK
          .axis_wr_data_count           (tl_resp_fifo_axis_data_count)
-`else
+  `else
          .axis_data_count           (tl_resp_fifo_axis_data_count)
-`endif
+  `endif
         ,.m_axis_tdata              (tl_resp_fifo_m_axis_tdata)
         ,.m_axis_tready             (tl_resp_fifo_m_axis_tready)
         ,.m_axis_tvalid             (tl_resp_fifo_m_axis_tvalid)
@@ -769,11 +766,11 @@ thymesisflow_32B_64B_routing_memory_ingress TF_MEMORY_ROUTING_INGR
 thymesisflow_rr_arbiter#(.SIZE(2))  TF_MEMORY_RR_ARB_INGR
       (
            .clock                   (clock)
-`ifdef TFLOOPBACK
+  `ifdef TFLOOPBACK
           ,.reset_n                 (reset_n)
-`else
+  `else
           ,.reset_n                 (reset)
-`endif
+  `endif
           ,.request_vector          (arb_req_mem_ingr)
           ,.request_nxt             (arb_req_nxt_mem_ingr)
           ,.selected                (arb_sel_mem_ingr)              
@@ -803,6 +800,7 @@ thymesisflow_64B_32B_routing_egress TF_MEMORY_ROUTING_EGR
 
 
 `endif
+// End of !TFCOMPUTE
 
 `ifndef TFLOOPBACK
 //--------------->QSFP0 Network Pipeline
