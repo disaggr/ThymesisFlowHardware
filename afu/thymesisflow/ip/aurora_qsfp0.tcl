@@ -1,6 +1,6 @@
 ## Aurora 64B66B QSFP0 configuration for 9V3  QSFP0 cage - 4x25.78125 and 309.375 reference clock
 
-create_ip -name aurora_64b66b -vendor xilinx.com -library ip -version 11.2 -module_name aurora_qsfp0
+create_ip -name aurora_64b66b -vendor xilinx.com -library ip -version 12.0 -module_name aurora_qsfp0
 
 
 set_property -dict [list CONFIG.CHANNEL_ENABLE {X0Y16 X0Y17 X0Y18 X0Y19} CONFIG.C_AURORA_LANES {4} CONFIG.C_LINE_RATE {25.78125} CONFIG.C_REFCLK_FREQUENCY {309.375} \
