@@ -78,6 +78,7 @@ module thymesisflow_top  (
       , input  [11:0]      active_actag
       //mem mode rty timeout in case of rty cmd responses
       , input  [35:0]      rty_timeout
+`ifndef TFLOOPBACK
       // QSFP0 external FPGA pins
       , input              qsfp0_ref_clk_n 
       , input              qsfp0_ref_clk_p 
@@ -92,6 +93,7 @@ module thymesisflow_top  (
       , input  [0:3]       qsfp1_rx_p
       , output [0:3]       qsfp1_tx_n
       , output [0:3]       qsfp1_tx_p     
+`endif
 
 );
 
@@ -331,7 +333,7 @@ assign      qsfp0_loc_ingress_cons_cred = 1'b0;
 assign      qsfp1_rem_ingress_getall_creds = 1'b0;
 assign      qsfp1_loc_ingress_cons_cred = 1'b0;
 
-
+`ifndef TFLOOPBACK
 aurora_power_on_reset AURORA_RESET_CONTROL0
      (
          .clock                      (serdes_init_clock)
@@ -351,7 +353,7 @@ aurora_power_on_reset AURORA_RESET_CONTROL1
         ,.rpb                       (qsfp1_power_on_rpb)
         ,.sys_out_aurora_r          (1'b0)
      );
-
+`endif
 
            
 `ifndef TFMEMORY
@@ -388,6 +390,7 @@ dataflit_fifo TF_TLX_AFU_DATAFIFO
 
        );
 
+`ifndef TFLOOPBACK
 thymesisflow_64B_32B_routing_egress TF_COMPUTE_ROUTING_EGR
       (
 
@@ -442,8 +445,54 @@ thymesisflow_rr_arbiter#(.SIZE(2))  TF_COMPUTE_RR_ARB_INGR
           ,.request_nxt             (c_arb_req_nxt_mem_ingr)
           ,.selected                (c_arb_sel_mem_ingr)              
       );
+`endif
+//End of !TFLOOPBACK
 
- 
+`ifdef TFLOOPBACK     
+ thymesisflow_64B_32B_routing_egress TF_COMPUTE_ROUTING_EGR
+    (
+
+       .clock                     (clock)                   
+      ,.reset_n                   (reset_n)
+
+      ,.egr_route_in_tdata         (ocx_compute_netflit_out_tdata)
+      ,.egr_route_in_tvalid        (ocx_compute_netflit_out_tvalid)
+      ,.egr_route_in_tready        (ocx_compute_netflit_out_tready)
+
+      ,.egr_route_out_tdata0       (ing_in_tdata0)
+      ,.egr_route_out_tvalid0      (ing_in_tvalid0)
+      ,.egr_route_out_tready0      (ing_in_tready0)
+
+      ,.egr_route_out_tdata1       (ing_in_tdata1)
+      ,.egr_route_out_tvalid1      (ing_in_tvalid1)
+      ,.egr_route_out_tready1      (ing_in_tready1)
+
+    );     
+
+//routes 32B flits to AXI-S 64B flit OpenCAPI aware.
+ thymesisflow_32B_64B_routing_compute_ingress TF_COMPUTE_ROUTING_INGR 
+    (
+       .clock                     (clock)         
+      ,.reset_n                   (reset_n) 
+
+      ,.route_in_tdata0           (egr_out_tdata0)
+      ,.route_in_tvalid0          (egr_out_tvalid0)
+      ,.route_in_tready0          (egr_out_tready0)
+
+      ,.route_in_tdata1           (egr_out_tdata1)
+      ,.route_in_tvalid1          (egr_out_tvalid1)
+      ,.route_in_tready1          (egr_out_tready1)
+
+      ,.route_out_tdata           (ocx_tlx_resp_tdata)
+      ,.route_out_tvalid          (ocx_tlx_resp_tvalid)
+      ,.route_out_tready          (ocx_tlx_resp_tready)
+
+      ,.arb_req                   (c_arb_req_mem_ingr)
+      ,.arb_req_nxt               (c_arb_req_nxt_mem_ingr)
+      ,.arb_sel                   (c_arb_sel_mem_ingr)
+
+    );
+`endif
 
 
 `endif  
@@ -582,7 +631,11 @@ ocx_memory_egress TF_MEMORY_EGRESS
 
 tl_resp_fifo TF_TL_RESP_FIFO
        (
+`ifdef TFLOOPBACK
+         .axis_wr_data_count           (tl_resp_fifo_axis_data_count)
+`else
          .axis_data_count           (tl_resp_fifo_axis_data_count)
+`endif
         ,.m_axis_tdata              (tl_resp_fifo_m_axis_tdata)
         ,.m_axis_tready             (tl_resp_fifo_m_axis_tready)
         ,.m_axis_tvalid             (tl_resp_fifo_m_axis_tvalid)
@@ -716,7 +769,11 @@ thymesisflow_32B_64B_routing_memory_ingress TF_MEMORY_ROUTING_INGR
 thymesisflow_rr_arbiter#(.SIZE(2))  TF_MEMORY_RR_ARB_INGR
       (
            .clock                   (clock)
+`ifdef TFLOOPBACK
+          ,.reset_n                 (reset_n)
+`else
           ,.reset_n                 (reset)
+`endif
           ,.request_vector          (arb_req_mem_ingr)
           ,.request_nxt             (arb_req_nxt_mem_ingr)
           ,.selected                (arb_sel_mem_ingr)              
@@ -747,6 +804,7 @@ thymesisflow_64B_32B_routing_egress TF_MEMORY_ROUTING_EGR
 
 `endif
 
+`ifndef TFLOOPBACK
 //--------------->QSFP0 Network Pipeline
 clock_domain_cross_fifo TF_QSFP0_LLC_INGRESS_FIFO 
       (
@@ -1136,7 +1194,8 @@ aurora_qsfp1 AURORA_QSFP1_CORE
         ,.txp                       (qsfp1_tx_p)
         ,.user_clk_out              (qsfp1_usr_clk)
       );
-
+`endif
+// End of !TFLOOPBACK
 
 
 endmodule

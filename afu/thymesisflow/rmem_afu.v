@@ -346,6 +346,7 @@ thymesisflow_top TF_TOP (
 
 `endif
 
+`ifndef TFLOOPBACK
      // QSFP0 external FPGA pins
       ,.qsfp0_ref_clk_n                         (qsfp0_ref_clk_n                 )
       ,.qsfp0_ref_clk_p                         (qsfp0_ref_clk_p                 ) 
@@ -363,7 +364,7 @@ thymesisflow_top TF_TOP (
       ,.qsfp1_rx_p                              (qsfp1_rx_p                      )
       ,.qsfp1_tx_n                              (qsfp1_tx_n                      )
       ,.qsfp1_tx_p                              (qsfp1_tx_p                      )
-
+`endif
 
      );
  

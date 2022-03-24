@@ -196,6 +196,7 @@ module oc_function (
   ,input        f1_octrl00_metadata_supported  
   ,input [11:0] f1_octrl00_actag_len_supported
 
+`ifndef TFLOOPBACK
    //QSFP GTY FPGA pins and reference clock coming from top and constraints file
   ,input              serdes_init_clock
   ,input              qsfp0_ref_clk_n
@@ -210,6 +211,7 @@ module oc_function (
   ,input  [0:3]       qsfp1_rx_p
   ,output [0:3]       qsfp1_tx_n
   ,output [0:3]       qsfp1_tx_p
+`endif
 
 );
 
@@ -338,7 +340,11 @@ cfg_func1 cfg_f1  (
     // AFU 0 Control
   , .cfg_ro_octrl00_reset_duration       (  8'h10                               ) // Number of cycles AFU reset is active (00=255 cycles)
   , .cfg_ro_octrl00_afu_control_index    (  6'b000000                           ) // Control structure for AFU Index 0
+`ifdef TFLOOPBACK
+  , .cfg_ro_octrl00_pasid_len_supported  (  5'b00001                            ) // Default is 1 PASID
+`else
   , .cfg_ro_octrl00_pasid_len_supported  (  5'b00000                            ) // Default is 1 PASID
+`endif
   , .cfg_ro_octrl00_metadata_supported   (  1'b0                                ) // MetaData is not supported
   , .cfg_ro_octrl00_actag_len_supported  ( 12'h001                              ) // Default is 1 acTag
     // Assigned configuration values 
