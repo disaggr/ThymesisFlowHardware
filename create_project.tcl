@@ -37,8 +37,8 @@ set tfspeed           "100"
 set afus {thymesisflow}
 set transceiver_types { bypass}
 set transceiver_speeds { 25.78125 25.625 20.0 }
-set cards { ad9v3, ad9h7 }
-set fpgas {xcvu3p-ffvc1517-2-i, xcvu37p-fsvh2892-2-e-es1}
+set cards { ad9v3 ad9h7 }
+set fpgas {xcvu3p-ffvc1517-2-i xcvu37p-fsvh2892-2-e-es1}
 set fpga  ""
 
 
@@ -281,7 +281,6 @@ set verilog_board_support [list \
  "[file normalize "$origin_dir/board_support_packages/$card/verilog/oc_bsp.v"]"\
  "[file normalize "$origin_dir/board_support_packages/$card/verilog/cfg_tieoffs.v"]"\
  "[file normalize "$origin_dir/board_support_packages/$card/verilog/vpd_stub.v"]"\
- "[file normalize "$origin_dir/board_support_packages/$card/verilog/iprog_icap.vhdl"]"\
 ]
 
 # Xilinx Example Design Wrappers for either buffer bypass or elastic buffer
